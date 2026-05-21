@@ -87,6 +87,8 @@ model match_tips {
   matchen_id   BigInt?
   deltagare    deltagare[]
   points       points[]
+
+  @@unique([deltagare_id, matchen_id], map: "unique_deltagare_match")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.

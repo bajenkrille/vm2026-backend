@@ -18,8 +18,6 @@ export const loginUser = async (req ,res) => {
   console.log("Detta kom in: ",req.body.email,req.body.password);
   const { email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const token = jwt.sign({ userId: 123 }, "secret", { expiresIn: "1h" });
-  console.log("token: ",token);
   console.log("hashed psw: ",hashedPassword);
   const deltagare = await prisma.deltagare.findFirst({
     where: { email: email },
@@ -27,6 +25,10 @@ export const loginUser = async (req ,res) => {
   const id = toJSON(deltagare.id)
   console.log(`Stored psw is ${deltagare.password}`);
   const isValid = await bcrypt.compare(password, deltagare.password);
+  const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  console.log("token: ",token);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  console.log("Decoded: ",decoded, "Userid: ",decoded.userId);
 
   if (!isValid) {
     return res.status(401).json({ error: "Invalid credentials" });
