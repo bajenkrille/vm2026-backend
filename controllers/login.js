@@ -1,4 +1,5 @@
 import { prisma } from '../prismaClient.ts'
+import { sendWelcomeMail} from '../services/mailService.js'
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -42,13 +43,19 @@ export const loginUser = async (req ,res) => {
       }
     })
   }
-  res.json({ email: email, psw: password });
 }
 
 export const registerUser = async (req, res) => {
   console.log("Detta registreras: ",req.body.fornamn, req.body.email,req.body.password);
   console.log("Detta registreras: ",req.body);
-  const { fornamn, efternamn, user, email, password} = req.body
+  const { fornamn, efternamn, user, email, password, phone} = req.body
+  const existingUser = await prisma.deltagare.findFirst({
+    where: { nick_name: user },
+  })
+  console.log("existingUser:", existingUser);
+  if (existingUser){
+    return res.status(409).json({error: "Username already taken"})
+  }
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   const sparadAnvandare = await prisma.deltagare.create({
     data: {
@@ -57,6 +64,17 @@ export const registerUser = async (req, res) => {
       nick_name: user,
       email: email,
       password: hashedPassword,
+      phone_number: phone,
     },
   });
+  if (sparadAnvandare){
+    const id = toJSON(sparadAnvandare.id)
+    const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("sparadAnvandare",sparadAnvandare.email, sparadAnvandare.nick_name);
+    sendWelcomeMail(sparadAnvandare.email, sparadAnvandare.nick_name)
+    return res.status(201).json({
+      message: "User created",
+      token
+    })
+  }
 }
