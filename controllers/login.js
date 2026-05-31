@@ -16,12 +16,12 @@ const toJSON = (obj) =>
   )
  
 export const loginUser = async (req ,res) => {
-  console.log("Detta kom in: ",req.body.email,req.body.password);
-  const { email, password } = req.body;
+  console.log("Detta kom in: ",req.body.user,req.body.password);
+  const { user, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   console.log("hashed psw: ",hashedPassword);
   const deltagare = await prisma.deltagare.findFirst({
-    where: { email: email },
+    where: { nick_name: user },
   });
   const id = toJSON(deltagare.id)
   console.log(`Stored psw is ${deltagare.password}`);

@@ -11,55 +11,21 @@ model deltagare {
   id                                    BigInt           @id @default(autoincrement())
   first_name                            String?          @db.VarChar(255)
   last_name                             String?          @db.VarChar(255)
-  nick_name                             String?          @db.VarChar(255)
+  nick_name                             String           @unique(map: "unique_nick_name") @db.VarChar(255)
   email                                 String?          @db.VarChar(255)
   phone_number                          String?          @db.VarChar(255)
   password                              String?          @db.VarChar(255)
   has_paid                              Boolean?
-  match_tips_id                         BigInt?
-  points_id                             BigInt?
-  liga_id                               BigInt?
-  match_tips                            match_tips?      @relation(fields: [match_tips_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "match_tips_fk")
-  points_deltagare_points_idTopoints    points?          @relation("deltagare_points_idTopoints", fields: [points_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "points_fk")
-  liga                                  liga[]
   liga_deltagare                        liga_deltagare[]
+  match_tips                            match_tips[]
   points_points_deltagare_idTodeltagare points[]         @relation("points_deltagare_idTodeltagare")
-
-  @@index([match_tips_id], map: "match_tips_fk")
-  @@index([points_id], map: "points_fk")
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model deltagare_seq {
-  next_val BigInt?
-
-  @@ignore
-}
-
-model flyway_schema_history {
-  installed_rank Int      @id
-  version        String?  @db.VarChar(50)
-  description    String   @db.VarChar(200)
-  type           String   @db.VarChar(20)
-  script         String   @db.VarChar(1000)
-  checksum       Int?
-  installed_by   String   @db.VarChar(100)
-  installed_on   DateTime @default(now()) @db.Timestamp(0)
-  execution_time Int
-  success        Boolean
-
-  @@index([success], map: "flyway_schema_history_s_idx")
 }
 
 model liga {
   id             BigInt           @id @default(autoincrement())
   liga_name      String?          @db.VarChar(255)
   description    String?          @db.VarChar(255)
-  deltagare_id   BigInt?
-  deltagare      deltagare?       @relation(fields: [deltagare_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "deltagare_fk")
   liga_deltagare liga_deltagare[]
-
-  @@index([deltagare_id], map: "liga_deltagare_fk")
 }
 
 model liga_deltagare {
@@ -72,68 +38,43 @@ model liga_deltagare {
   @@index([deltagare_id], map: "deltagare_join_fk")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model liga_seq {
-  next_val BigInt?
-
-  @@ignore
-}
-
 model match_tips {
-  id           BigInt      @id @default(autoincrement())
+  id           BigInt    @id @default(autoincrement())
   hemma_mal    Int?
   borta_mal    Int?
-  deltagare_id BigInt?
-  matchen_id   BigInt?
-  deltagare    deltagare[]
+  deltagare_id BigInt
+  matchen_id   BigInt
+  deltagare    deltagare @relation(fields: [deltagare_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "match_tips_deltagare_fk")
+  matchen      matchen   @relation(fields: [matchen_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "match_tips_matchen_fk")
   points       points[]
 
-  @@unique([deltagare_id, matchen_id], map: "unique_deltagare_match")
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model match_tips_seq {
-  next_val BigInt?
-
-  @@ignore
+  @@unique([deltagare_id, matchen_id], map: "unique_deltagare_matchen")
+  @@index([deltagare_id], map: "match_tips_deltagare_fk")
+  @@index([matchen_id], map: "match_tips_matchen_fk")
 }
 
 model matchen {
-  id        BigInt   @id @default(autoincrement())
-  hemma_lag String?  @db.VarChar(255)
-  borta_lag String?  @db.VarChar(255)
-  hemma_mal Int?
-  borta_mal Int?
-  played    Boolean?
-  datum     String?  @db.VarChar(255)
-  tid       String?  @db.VarChar(255)
-  location  String?  @db.VarChar(255)
-  grupp     String?  @db.VarChar(255)
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model matchen_seq {
-  next_val BigInt?
-
-  @@ignore
+  id         BigInt       @id @default(autoincrement())
+  hemma_lag  String?      @db.VarChar(255)
+  borta_lag  String?      @db.VarChar(255)
+  hemma_mal  Int?
+  borta_mal  Int?
+  played     Boolean?
+  datum      String?      @db.VarChar(255)
+  tid        String?      @db.VarChar(255)
+  location   String?      @db.VarChar(255)
+  grupp      String?      @db.VarChar(255)
+  match_tips match_tips[]
 }
 
 model points {
-  id                                       BigInt      @id @default(autoincrement())
+  id                                       BigInt     @id @default(autoincrement())
   points                                   Int?
-  match_tips_id                            BigInt?
-  deltagare_id                             BigInt?
-  deltagare_deltagare_points_idTopoints    deltagare[] @relation("deltagare_points_idTopoints")
-  deltagare_points_deltagare_idTodeltagare deltagare?  @relation("points_deltagare_idTodeltagare", fields: [deltagare_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "points_deltagare_fk")
-  match_tips                               match_tips? @relation(fields: [match_tips_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "points_match_tips_fk")
+  match_tips_id                            BigInt
+  deltagare_id                             BigInt
+  deltagare_points_deltagare_idTodeltagare deltagare  @relation("points_deltagare_idTodeltagare", fields: [deltagare_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "points_deltagare_fk")
+  match_tips                               match_tips @relation(fields: [match_tips_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "points_match_tips_fk")
 
   @@index([deltagare_id], map: "points_deltagare_fk")
   @@index([match_tips_id], map: "points_match_tips_fk")
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model points_seq {
-  next_val BigInt?
-
-  @@ignore
 }
