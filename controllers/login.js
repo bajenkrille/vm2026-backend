@@ -1,7 +1,9 @@
 import { prisma } from '../prismaClient.ts'
-import { sendWelcomeMail} from '../services/mailService.js'
+import { sendWelcomeMail, sendPswResetMail } from '../services/mailService.js'
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto"
+
 
 const saltRounds = 10;
 // const usrPsw = await bcrypt.hash("gurra", saltRounds)
@@ -15,34 +17,103 @@ const toJSON = (obj) =>
     )
   )
  
-export const loginUser = async (req ,res) => {
-  console.log("Detta kom in: ",req.body.user,req.body.password);
-  const { user, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log("hashed psw: ",hashedPassword);
+  export const loginUser = async (req ,res) => {
+    console.log("Detta kom in: ",req.body.user,req.body.password);
+    const { user, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log("hashed psw: ",hashedPassword);
+    const deltagare = await prisma.deltagare.findFirst({
+      where: { nick_name: user },
+    });
+    const id = toJSON(deltagare.id)
+    console.log(`Stored psw is ${deltagare.password}`);
+    const isValid = await bcrypt.compare(password, deltagare.password);
+    const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("token: ",token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded: ",decoded, "Userid: ",decoded.userId);
+  
+    if (!isValid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    } else {
+      return res.status(200).json({
+        token,
+        user: {
+          id: id,
+          name: deltagare.nick_name,
+          email: deltagare.email
+        }
+      })
+    }
+  }
+ 
+  export const resetPsw = async (req ,res) => {
+    console.log("Detta kom in: ",req.body.token,req.body.password);
+    const { token, password } = req.body;
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex")
+    // const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // console.log("hashed psw: ",hashedPassword);
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const tokenData = await prisma.reset_tokens.findFirst({
+      where: { token_hash: tokenHash },
+    });
+    // const id = toJSON(deltagare.id)
+    // console.log(`Stored psw is ${deltagare.password}`);
+    console.log("hash_token: ",tokenData);
+    // const isValid = await bcrypt.compare(token, tokenData.token_hash);
+    // const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("token: ",token);
+    // console.log("Decoded: ",decoded, "Userid: ",decoded.userId);
+  
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const updatedDeltagare = await prisma.deltagare.update({
+        where: { id: tokenData.user_id},
+        data: { password: hashedPassword}
+      })
+      console.log("Updaterad deltagare:", updatedDeltagare);
+      return res.status(200).json({
+        token,
+        user: {
+          name: updatedDeltagare.nick_name,
+          email: updatedDeltagare.email
+        }
+      })
+    
+  }
+    
+export const generateResetEmail = async (req, res) => {
+  const expiryTime = "1h"
+  const expiresIn = 60
   const deltagare = await prisma.deltagare.findFirst({
-    where: { nick_name: user },
+    where: { nick_name: req.body.user },
   });
   const id = toJSON(deltagare.id)
-  console.log(`Stored psw is ${deltagare.password}`);
-  const isValid = await bcrypt.compare(password, deltagare.password);
-  const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-  console.log("token: ",token);
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  console.log("Decoded: ",decoded, "Userid: ",decoded.userId);
-
-  if (!isValid) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  } else {
-    return res.status(200).json({
-      token,
-      user: {
-        id: id,
-        name: deltagare.nick_name,
-        email: deltagare.email
-      }
-    })
+  const rawToken = crypto.randomBytes(32).toString("hex")
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex")
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 30) // 30 minutes
+  // const rawToken = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: expiryTime })
+  // const hashedToken = await bcrypt.hash(rawToken, saltRounds)
+  // const expiresAt = new Date(Date.now() + 1000 * 60 * expiresIn)
+  const token_item = await prisma.reset_tokens.create({
+    data: {
+      user_id: deltagare.id,
+      token_hash: tokenHash,
+      expires_at: expiresAt
+    }
+  })
+  if (token_item){
+    console.log("Email: ",deltagare.email, deltagare.nick_name);
+    // const resetLink = `https://omyndigheten.se/reset?token=${rawToken}`
+    const resetLink = `http://localhost:5173/reset/${rawToken}`
+    sendPswResetMail(deltagare.email, resetLink, deltagare.nick_name) 
   }
+
 }
 
 export const registerUser = async (req, res) => {

@@ -19,6 +19,7 @@ model deltagare {
   liga_deltagare                        liga_deltagare[]
   match_tips                            match_tips[]
   points_points_deltagare_idTodeltagare points[]         @relation("points_deltagare_idTodeltagare")
+  reset_tokens                          reset_tokens[]
 }
 
 model liga {
@@ -77,4 +78,16 @@ model points {
 
   @@index([deltagare_id], map: "points_deltagare_fk")
   @@index([match_tips_id], map: "points_match_tips_fk")
+}
+
+model reset_tokens {
+  id         Int       @id @default(autoincrement())
+  user_id    BigInt
+  token_hash String    @unique(map: "token_hash") @db.VarChar(64)
+  expires_at DateTime  @db.DateTime(0)
+  used_at    DateTime? @db.DateTime(0)
+  created_at DateTime  @default(now()) @db.DateTime(0)
+  deltagare  deltagare @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "reset_tokens_ibfk_1")
+
+  @@index([user_id], map: "user_id")
 }

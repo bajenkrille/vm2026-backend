@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-async function sendCustomMail({ to, subject, text, html }) {
+async function sendCustomMail( to, subject, text, html ) {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
@@ -57,13 +57,28 @@ async function sendWelcomeMail( to, username ) {
   });
 }
 
-async function sendPswResetMail({ to, subject, text, html }) {
+async function sendPswResetMail( to, resetLink, username ) {
+  console.log("Send mail to", to, username);
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
-    subject,
-    text,
-    html
+    subject: "Password reset för VM-tipset",
+    text: "${resetLink}",
+    html:  `
+    <h3>Länk för reset av password:</h3>
+
+    <p>
+      Hej <strong>${username}</strong>!
+    </p>
+
+    <p>
+      Klicka på länken för att komma till password reset. Länken är giltig i 1 timme.
+    </p>
+
+    <p>
+      ${resetLink}.
+    </p>
+  `
   });
 }
 
