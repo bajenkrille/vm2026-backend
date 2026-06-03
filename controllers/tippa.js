@@ -1,5 +1,7 @@
 import { prisma } from '../prismaClient.ts'
-import { toMatchDto } from '../services/matchenMapper.js';
+// import { toMatchDto } from '../services/matchenMapper.js';
+import { sendTipsConfirmationMail } from '../services/mailService.js'
+
 
 export const storeTips = async (req ,res) => {
   console.log("Tips: ",req.body);
@@ -17,6 +19,10 @@ export const storeTips = async (req ,res) => {
         matchen_id: BigInt(matchId),
       }
     })
+    const {nick_name, email} = await prisma.deltagare.findUnique({
+      where: { id: deltagare_id },
+    })
+    console.log("Antal tippade matcher: ",data.length);
     await prisma.$transaction(
       data.map(tip =>
         prisma.match_tips.upsert({
@@ -34,6 +40,15 @@ export const storeTips = async (req ,res) => {
         })
       )
     )    
+    const antalTippadeMatcher = data.length
+    let msg = ""
+    if (antalTippadeMatcher === 72){
+      msg = "Du har tippat samtliga matcher, du kan ta det lugnt, men har möjlighet att ändra ditt tips fram till VM-starten."
+    } else {
+      const rest = 72 - antalTippadeMatcher
+      msg = `Du har kvar att tippa ${rest} matcher. Glöm inte att göra det innan den 11/6 kl. 21.00!`
+    }
+    sendTipsConfirmationMail(email, nick_name, antalTippadeMatcher, msg)
     res.status(200).json({msg: "Stored"})
   } catch (err){
     console.error(err)

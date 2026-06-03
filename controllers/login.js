@@ -25,6 +25,9 @@ const toJSON = (obj) =>
     const deltagare = await prisma.deltagare.findFirst({
       where: { nick_name: user },
     });
+    if (!deltagare){
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
     const id = toJSON(deltagare.id)
     console.log(`Stored psw is ${deltagare.password}`);
     const isValid = await bcrypt.compare(password, deltagare.password);
@@ -34,7 +37,7 @@ const toJSON = (obj) =>
     console.log("Decoded: ",decoded, "Userid: ",decoded.userId);
   
     if (!isValid) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid username or password" });
     } else {
       return res.status(200).json({
         token,

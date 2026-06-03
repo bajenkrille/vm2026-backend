@@ -82,8 +82,40 @@ async function sendPswResetMail( to, resetLink, username ) {
   });
 }
 
+async function sendTipsConfirmationMail( to, username, antalTippadeMatcher, meddelande ) {
+  console.log("Send mail to", to, username);
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to,
+    subject: "Ditt tips mottaget för VM-tipset",
+    text: "${resetLink}",
+    html:  `
+    <h3>Ditt inskickade tips har tagits emot och sparats.</h3>
+    <p>
+      Hej <strong>${username}</strong>!
+    </p>
+    <p>
+      Ditt tips innehöll ${antalTippadeMatcher} av 72 matcher.
+    </p>
+    <p>
+      ${meddelande}
+    </p>
+    <p>
+      Insatsen är 100 kr och swishas till <b>0702244230</b>. Var noga med att <b>ange för vilken deltagare betalningen gäller</b>.
+    </p>    
+    <p>
+      (Helt frivilligt, men uppskattat, är ett litet bidrag för omkostnader á 5-10 kr. Ev överskott går tillbaka till vinstpotten.)
+    </p>    
+    <p>
+      Om du inte har swish, maila krille.home@gmail.com för alternativ betalningsmetod.
+    </p>    
+  `
+  });
+}
+
 export {
   sendCustomMail,
   sendWelcomeMail,
-  sendPswResetMail
+  sendPswResetMail,
+  sendTipsConfirmationMail
 };
