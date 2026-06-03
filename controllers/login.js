@@ -87,6 +87,8 @@ export const generateResetEmail = async (req, res) => {
 	const deltagare = await prisma.deltagare.findFirst({
 		where: { nick_name: req.body.user },
 	});
+  console.log("req.body: ", req.body);
+  console.log("deltagare: ",deltagare);
 	const id = toJSON(deltagare.id);
 	const rawToken = crypto.randomBytes(32).toString("hex");
 	const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
