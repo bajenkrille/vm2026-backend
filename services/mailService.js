@@ -113,9 +113,29 @@ async function sendTipsConfirmationMail( to, username, antalTippadeMatcher, medd
   });
 }
 
+async function sendTipsInformationMail( to, username, antalTippadeMatcher, email ) {
+  console.log("Send mail to", to, username);
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to,
+    subject: "Nytt tips mottaget",
+    text: "tjo",
+    html:  `
+    <h3>Tips har kommit in.</h3>
+    <p>
+      Från <strong>${username}</strong> med ${email}!
+    </p>
+    <p>
+      Tipset innehöll ${antalTippadeMatcher} av 72 matcher.
+    </p>
+  `
+  });
+}
+
 export {
   sendCustomMail,
   sendWelcomeMail,
   sendPswResetMail,
-  sendTipsConfirmationMail
+  sendTipsConfirmationMail,
+  sendTipsInformationMail
 };

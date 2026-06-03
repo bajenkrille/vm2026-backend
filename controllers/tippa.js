@@ -1,6 +1,6 @@
 import { prisma } from '../prismaClient.ts'
 // import { toMatchDto } from '../services/matchenMapper.js';
-import { sendTipsConfirmationMail } from '../services/mailService.js'
+import { sendTipsConfirmationMail, sendTipsInformationMail } from '../services/mailService.js'
 
 
 export const storeTips = async (req ,res) => {
@@ -49,6 +49,7 @@ export const storeTips = async (req ,res) => {
       msg = `Du har kvar att tippa ${rest} matcher. Glöm inte att göra det innan den 11/6 kl. 21.00!`
     }
     sendTipsConfirmationMail(email, nick_name, antalTippadeMatcher, msg)
+    sendTipsInformationMail("krille.home@gmail.com", nick_name, antalTippadeMatcher, email)
     res.status(200).json({msg: "Stored"})
   } catch (err){
     console.error(err)
