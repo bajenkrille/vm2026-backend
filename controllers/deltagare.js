@@ -46,3 +46,17 @@ export const getDeltagareAndCompleteness = async(req,res) => {
 
   res.status(200).json(toJSON(result));
 }
+
+export const setBetalning = async(req, res) => {
+  console.log("Received: ",req.body);
+  const deltagareIds = req.body.map(id => BigInt(id));
+
+  const result = await prisma.deltagare.updateMany({
+    where: { id: {
+      in: deltagareIds
+    } },
+    data: { has_paid: true },
+  })
+
+  console.log("ID: ",req.body.id, "result: ", result);
+}
