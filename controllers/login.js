@@ -149,7 +149,8 @@ export const registerUser = async (req, res) => {
 			sparadAnvandare.email,
 			sparadAnvandare.nick_name
 		);
-		sendWelcomeMail(sparadAnvandare.email, sparadAnvandare.nick_name);
+		const loginLink = `${process.env.FRONTEND_URL}/login`;
+		sendWelcomeMail(sparadAnvandare.email, sparadAnvandare.nick_name, loginLink);
 		return res.status(201).json({
 			message: "User created",
 			token,

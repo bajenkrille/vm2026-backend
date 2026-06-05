@@ -20,7 +20,7 @@ async function sendCustomMail( to, subject, text, html ) {
   });
 }
 
-async function sendWelcomeMail( to, username ) {
+async function sendWelcomeMail( to, username, loginLink ) {
   console.log("Send mail to", to, username);
   try {
     await transporter.verify();
