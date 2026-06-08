@@ -2,6 +2,11 @@ import { prisma } from '../prismaClient.ts'
 // import { toMatchDto } from '../services/matchenMapper.js';
 import { sendTipsConfirmationMail, sendTipsInformationMail } from '../services/mailService.js'
 
+// store hashedPassword in DB
+const toJSON = (obj) =>
+	JSON.parse(
+		JSON.stringify(obj, (_, v) => (typeof v === "bigint" ? Number(v) : v))
+	);
 
 export const storeTips = async (req ,res) => {
   console.log("Tips: ",req.body);
@@ -87,10 +92,10 @@ export const getAllTips = async (req ,res) => {
     const deltagare_id = req.user.userId
     const tippadeMatcherAlla = await prisma.match_tips.findMany({
     });
-    // console.log("Tippade matcher: ",tippadeMatcherAlla);
+    console.log("Tippade matcher: ",tippadeMatcherAlla);
     const data = tippadeMatcherAlla.map((item) => {
       return {
-        deltagareId: deltagare_id,
+        deltagareId: Number(item.deltagare_id),
         matchId: Number(item.matchen_id),
         tips: [item.hemma_mal, item.borta_mal]
       }
