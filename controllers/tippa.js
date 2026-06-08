@@ -71,6 +71,31 @@ export const getTips = async (req ,res) => {
       }
     })
     console.log("Data: ",data);
+    const tippadeMatcherAlla = await prisma.match_tips.findMany({
+    });
+    console.log("Allas tippade matcher: ",tippadeMatcherAlla);
+
+    res.status(200).json(data)    
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({error: "Boing boing"})    
+  }
+}
+
+export const getAllTips = async (req ,res) => {
+  try {
+    const deltagare_id = req.user.userId
+    const tippadeMatcherAlla = await prisma.match_tips.findMany({
+    });
+    // console.log("Tippade matcher: ",tippadeMatcherAlla);
+    const data = tippadeMatcherAlla.map((item) => {
+      return {
+        deltagareId: deltagare_id,
+        matchId: Number(item.matchen_id),
+        tips: [item.hemma_mal, item.borta_mal]
+      }
+    })
+    console.log("Data: ",data);
     res.status(200).json(data)    
   } catch (err) {
     console.error(err)

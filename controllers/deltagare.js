@@ -8,6 +8,7 @@ const toJSON = (obj) =>
   )
 
 export const getAllDeltagare = async (req ,res) => {
+  console.log("GETALLDELTAGARE!!!!!!!");
   const allaDeltagare = await prisma.deltagare.findMany();
   res.json(toJSON(allaDeltagare));
 }
@@ -58,5 +59,9 @@ export const setBetalning = async(req, res) => {
     data: { has_paid: true },
   })
 
-  console.log("ID: ",req.body.id, "result: ", result);
+  console.log("ID: ",deltagareIds, "result: ", result);
+  if (result){
+    res.status(200).json(result)
+  }
+  res.status(500).json({msg: "Något gick fel"})
 }
