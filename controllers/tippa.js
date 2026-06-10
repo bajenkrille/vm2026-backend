@@ -100,10 +100,39 @@ export const getAllTips = async (req ,res) => {
         tips: [item.hemma_mal, item.borta_mal]
       }
     })
-    console.log("Data: ",data);
+    // console.log("Datanana: ",data);
     res.status(200).json(data)    
   } catch (err) {
     console.error(err)
     res.status(500).json({error: "Boing boing"})    
   }
+}
+
+export const getPoints = async (req, res) => {
+  try {
+    const pointsRaw = await prisma.points.findMany({
+      select: {
+        points: true,
+        match_tips: {
+          select: {
+            deltagare_id: true,
+            matchen_id: true,
+          },
+        },
+      },
+    });
+  
+    const points = pointsRaw.map(r => ({
+      deltagareId: Number(r.match_tips.deltagare_id),
+      matchId: Number(r.match_tips.matchen_id),
+      points: r.points,
+    }))
+  
+    console.log("points: ",points)
+      // console.log("Datanana: ",data);
+    res.status(200).json(points)    
+  } catch (err) {
+    res.status(500).json({error: "Getting points failed"})    
+  }
+
 }

@@ -49,7 +49,7 @@ export const getDeltagareAndCompleteness = async(req,res) => {
 }
 
 export const setBetalning = async(req, res) => {
-  console.log("Received: ",req.body);
+  console.log("Received betalning: ",req.body);
   const deltagareIds = req.body.map(id => BigInt(id));
 
   const result = await prisma.deltagare.updateMany({
