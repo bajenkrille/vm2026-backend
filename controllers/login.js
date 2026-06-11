@@ -72,13 +72,17 @@ export const resetPsw = async (req, res) => {
 		data: { password: hashedPassword },
 	});
 	console.log("Updaterad deltagare:", updatedDeltagare);
-	return res.status(200).json({
-		token,
-		user: {
-			name: updatedDeltagare.nick_name,
-			email: updatedDeltagare.email,
-		},
-	});
+	if (!updatedDeltagare){
+		return res.status(401).json({msg: "Något gick fel"})
+	} else {
+		return res.status(200).json({
+			token,
+			user: {
+				name: updatedDeltagare.nick_name,
+				email: updatedDeltagare.email,
+			},
+		});
+	}
 };
 
 export const generateResetEmail = async (req, res) => {
@@ -89,6 +93,9 @@ export const generateResetEmail = async (req, res) => {
 	});
   console.log("req.body: ", req.body);
   console.log("deltagare: ",deltagare);
+	if (!deltagare){
+		return res.status(401).json({msg: "Något gick fel. Sannolikt fel användarnamn."})
+	}
 	const id = toJSON(deltagare.id);
 	const rawToken = crypto.randomBytes(32).toString("hex");
 	const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
