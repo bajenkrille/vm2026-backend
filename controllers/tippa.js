@@ -28,7 +28,7 @@ export const storeTips = async (req ,res) => {
       where: { id: deltagare_id },
     })
     console.log("Antal tippade matcher: ",data.length);
-    await prisma.$transaction(
+    const tipsStored = await prisma.$transaction(
       data.map(tip =>
         prisma.match_tips.upsert({
           where: {
@@ -53,9 +53,13 @@ export const storeTips = async (req ,res) => {
       const rest = 72 - antalTippadeMatcher
       msg = `Du har kvar att tippa ${rest} matcher. Glöm inte att göra det innan den 11/6 kl. 21.00!`
     }
-    sendTipsConfirmationMail(email, nick_name, antalTippadeMatcher, msg)
-    sendTipsInformationMail("krille.home@gmail.com", nick_name, antalTippadeMatcher, email)
-    res.status(200).json({msg: "Stored"})
+    if (!tipsStored){
+      res.status(500).json({error: "Misslyckat sparande av tips"})
+    } else {
+      sendTipsConfirmationMail(email, nick_name, antalTippadeMatcher, msg)
+      sendTipsInformationMail("krille.home@gmail.com", nick_name, antalTippadeMatcher, email)
+      res.status(200).json({msg: "Stored"})  
+    }
   } catch (err){
     console.error(err)
     res.status(500).json({error: "Boing boing"})
