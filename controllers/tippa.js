@@ -13,6 +13,7 @@ export const storeTips = async (req ,res) => {
   console.dir(req.body, { depth: null });
   console.log("Decoded: ", req.user);
   try {
+    res.status(401).json({msg: "Not authorized"})
     const deltagare_id = req.user.userId
     const data = req.body.map(match => {
       const matchId = match.matchId
