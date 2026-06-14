@@ -132,10 +132,30 @@ async function sendTipsInformationMail( to, username, antalTippadeMatcher, email
   });
 }
 
+async function sendLigaInformationMail( to, liganame, beskrivning ) {
+  console.log("Send mail to", to, liganame);
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to,
+    subject: "Du har blivit tillagd i en liga",
+    text: "tjo",
+    html:  `
+    <h3>Ligainformation.</h3>
+    <p>
+      Du har blivit tillagd i ligan <strong>${liganame}</strong> som beskrivs såhär:
+    </p>
+    <p>
+    ${beskrivning}
+    </p>
+  `
+  });
+}
+
 export {
   sendCustomMail,
   sendWelcomeMail,
   sendPswResetMail,
   sendTipsConfirmationMail,
-  sendTipsInformationMail
+  sendTipsInformationMail,
+  sendLigaInformationMail
 };

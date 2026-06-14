@@ -1,4 +1,5 @@
 import { prisma } from '../prismaClient.ts'
+import { sendLigaInformationMail } from "../services/mailService.js";
 
 const toJSON = (obj) =>
   JSON.parse(
@@ -38,6 +39,7 @@ export const skapaLiga = async (req, res) => {
   
     const ligaId = liga.id
     const deltagare = req.body.valda
+    console.log("Deltagare for maillist: ",deltagare);
     const ligaDeltagare = await prisma.liga_deltagare.createMany({
       data: deltagare.map((deltagareId) => ({
         liga_id: BigInt(ligaId),
@@ -47,7 +49,24 @@ export const skapaLiga = async (req, res) => {
     });
     console.log("ligaDeltagare: ", ligaDeltagare);
 
-    if (ligaDeltagare) res.status(200).json({msg: "Skapande av liga gick bra"})
+    if (ligaDeltagare){
+      const recipients = await prisma.deltagare.findMany({
+        where: {
+          id: {
+            in: deltagare
+          }
+        },
+        select: {
+          email: true
+        }
+      })
+      const mailingList = recipients
+        .map(r => r.email)
+        .filter(Boolean)      
+
+      sendLigaInformationMail(mailingList, req.body.liganamn, req.body.beskrivning)
+      res.status(200).json({msg: "Skapande av liga gick bra"})
+    } 
     else res.status(500).json({msg: "Något gick fel när deltagare skulle läggas till"})
   
   } catch (error) {
