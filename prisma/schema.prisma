@@ -16,6 +16,8 @@ model deltagare {
   phone_number                          String?          @db.VarChar(255)
   password                              String?          @db.VarChar(255)
   has_paid                              Boolean?
+  liga_liga_admin_idTodeltagare         liga[]           @relation("liga_admin_idTodeltagare")
+  liga_liga_creator_idTodeltagare       liga[]           @relation("liga_creator_idTodeltagare")
   liga_deltagare                        liga_deltagare[]
   match_tips                            match_tips[]
   points_points_deltagare_idTodeltagare points[]         @relation("points_deltagare_idTodeltagare")
@@ -23,10 +25,18 @@ model deltagare {
 }
 
 model liga {
-  id             BigInt           @id @default(autoincrement())
-  liga_name      String?          @db.VarChar(255)
-  description    String?          @db.VarChar(255)
-  liga_deltagare liga_deltagare[]
+  id                                   BigInt           @id @default(autoincrement())
+  liga_name                            String           @unique(map: "unique_liga_name") @db.VarChar(255)
+  description                          String?          @db.VarChar(255)
+  private                              Boolean          @default(false)
+  creator_id                           BigInt
+  admin_id                             BigInt?
+  deltagare_liga_admin_idTodeltagare   deltagare?       @relation("liga_admin_idTodeltagare", fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_liga_admin")
+  deltagare_liga_creator_idTodeltagare deltagare        @relation("liga_creator_idTodeltagare", fields: [creator_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_liga_creator")
+  liga_deltagare                       liga_deltagare[]
+
+  @@index([admin_id], map: "fk_liga_admin")
+  @@index([creator_id], map: "fk_liga_creator")
 }
 
 model liga_deltagare {
