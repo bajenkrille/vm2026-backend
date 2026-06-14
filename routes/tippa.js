@@ -4,6 +4,6 @@ import { requireAuth } from "../middleware/authMiddleware";
 import {storeTips, getTips, getAllTips, getPoints} from "../controllers/tippa.js"
 router.post("/", requireAuth, storeTips)
 router.get("/", requireAuth, getTips)
-router.get("/allatips", requireAuth, getAllTips)
+router.get("/allatips", getAllTips)
 router.get("/points", getPoints)
 export default router;

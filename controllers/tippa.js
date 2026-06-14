@@ -93,7 +93,6 @@ export const getTips = async (req ,res) => {
 
 export const getAllTips = async (req ,res) => {
   try {
-    const deltagare_id = req.user.userId
     const tippadeMatcherAlla = await prisma.match_tips.findMany({
     });
     console.log("Tippade matcher: ",tippadeMatcherAlla);
