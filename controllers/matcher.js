@@ -9,12 +9,39 @@ const toJSON = (obj) =>
     )
   )
 
-export const getMatcher = async (req ,res) => {
-  const matchSchedule = await prisma.matchen.findMany();
-  res.json(matchSchedule.map(toMatchDto));
-  console.log("Matcherna: ",matchSchedule.map(toMatchDto));
-}
+  export const getMatcher = async (req ,res) => {
+    const matchSchedule = await prisma.matchen.findMany();
+    res.json(matchSchedule.map(toMatchDto));
+    console.log("Matcherna: ",matchSchedule.map(toMatchDto));
+  }
 
+  export const getDagensMatcher = async (req ,res) => {
+    const today = new Date().toLocaleDateString('sv-SE')
+    const tomorrowDate = new Date()
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+    const tomorrow = tomorrowDate.toLocaleDateString('sv-SE')
+    
+    console.log(today)     // 2026-06-18
+    console.log(tomorrow)  // 2026-06-19
+
+    const matches = await prisma.matchen.findMany({
+      where: {
+        OR: [
+          {
+            datum: today,
+            tid: { gte: '17:45' }
+          },
+          {
+            datum: tomorrow,
+            tid: { lte: '06:15' }
+          }
+        ]
+      }
+    })
+    res.json(matches.map(toMatchDto));
+    console.log("Dagens matcher: ",matches.map(toMatchDto));
+  }
+    
 export const setResults = async(req,res) => {
   const results = req.body
   console.log("Rec results",results);
