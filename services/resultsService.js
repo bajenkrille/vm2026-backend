@@ -40,15 +40,17 @@ const calculatePoints = async (results) => {
     const pointsData = filteredTips.map(tips => {
       const points = pointsCalculator(Number(gjordaHemmaMal), Number(gjordaBortaMal), tips.hemma_mal, tips.borta_mal)
       const matchTipsMatch = Number(tips.matchen_id)
+      console.log("matchTipsMatch: ",matchTipsMatch);
       if (matchTipsMatch === matchId){
         return {
           points: points,
           deltagare_id: tips.deltagare_id,
-          match_tips_id: tips.id
+          match_tips_id: tips.id,
+          match_id: matchTipsMatch
         }
       }
     }) 
-    console.log("pointsData: ",pointsData);
+    console.log("resultsService-pointsData: ",pointsData);
     pointsArray.push(pointsData)
   });
   console.log("pointsArray: ",pointsArray);

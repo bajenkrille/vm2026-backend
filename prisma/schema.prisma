@@ -76,6 +76,7 @@ model matchen {
   location   String?      @db.VarChar(255)
   grupp      String?      @db.VarChar(255)
   match_tips match_tips[]
+  points     points[]
 }
 
 model points {
@@ -83,11 +84,15 @@ model points {
   points                                   Int?
   match_tips_id                            BigInt
   deltagare_id                             BigInt
+  match_id                                 BigInt
+  matchen                                  matchen    @relation(fields: [match_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_points_match")
   deltagare_points_deltagare_idTodeltagare deltagare  @relation("points_deltagare_idTodeltagare", fields: [deltagare_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "points_deltagare_fk")
   match_tips                               match_tips @relation(fields: [match_tips_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "points_match_tips_fk")
 
+  @@unique([deltagare_id, match_id], map: "ux_points_deltagare_match")
   @@index([deltagare_id], map: "points_deltagare_fk")
   @@index([match_tips_id], map: "points_match_tips_fk")
+  @@index([match_id], map: "fk_points_match")
 }
 
 model reset_tokens {
