@@ -74,6 +74,15 @@ export const skapaLiga = async (req, res) => {
   }
 }
 
+export const getMinaLigor = async (req ,res) => {
+  console.log("GETMINALIGOR!!!!!!!", req.user);
+  const minaLigor = await prisma.liga_deltagare.findMany({
+    where: { deltagare_id: req.user.userId },
+  });
+  console.log("minaLigor: ", minaLigor);
+  res.json(toJSON(minaLigor));
+}
+
 export const getLigor = async (req ,res) => {
   console.log("GETLIGOR!!!!!!!");
   const allaLigor = await prisma.liga.findMany();
