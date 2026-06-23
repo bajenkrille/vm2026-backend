@@ -75,6 +75,7 @@ model matchen {
   tid        String?      @db.VarChar(255)
   location   String?      @db.VarChar(255)
   grupp      String?      @db.VarChar(255)
+  updated_at DateTime?    @default(now()) @db.Timestamp(0)
   match_tips match_tips[]
   points     points[]
 }
