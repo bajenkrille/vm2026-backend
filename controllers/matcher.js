@@ -24,7 +24,7 @@ export const getDagensMatcher = async (req ,res) => {
   const todayDate = new Date()
 
   // Let "today" change at 12:00 instead of midnight
-  if (todayDate.getHours() < 12) {
+  if (todayDate.getHours() < 10) {
     todayDate.setDate(todayDate.getDate() - 1)
   }
 
