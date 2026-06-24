@@ -16,13 +16,26 @@ export const getMatcher = async (req ,res) => {
 }
 
 export const getDagensMatcher = async (req ,res) => {
-  const today = new Date().toLocaleDateString('sv-SE')
-  const tomorrowDate = new Date()
+  // const today = new Date().toLocaleDateString('sv-SE')
+  // const tomorrowDate = new Date()
+  // tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  // const tomorrow = tomorrowDate.toLocaleDateString('sv-SE')
+
+  const todayDate = new Date()
+
+  // Let "today" change at 12:00 instead of midnight
+  if (todayDate.getHours() < 12) {
+    todayDate.setDate(todayDate.getDate() - 1)
+  }
+
+  const tomorrowDate = new Date(todayDate)
   tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+
+  const today = todayDate.toLocaleDateString('sv-SE')
   const tomorrow = tomorrowDate.toLocaleDateString('sv-SE')
-  
-  console.log(today)     // 2026-06-18
-  console.log(tomorrow)  // 2026-06-19
+
+  console.log(today)
+  console.log(tomorrow)
 
   const matches = await prisma.matchen.findMany({
     where: {
