@@ -140,3 +140,24 @@ export const getPoints = async (req, res) => {
   }
 
 }
+
+export const getPointDetails = async (req, res) => {
+  try {
+    const pointDetails = await prisma.points.groupBy({
+      by: ['deltagare_id', 'points'],
+      _count: {
+        points: true
+      },
+      orderBy: [
+        { deltagare_id: 'asc' },
+        { points: 'asc' }
+      ]
+    })  
+    console.log("pointDetails: ",pointDetails)
+      // console.log("Datanana: ",data);
+    res.status(200).json(toJSON(pointDetails))    
+  } catch (err) {
+    res.status(500).json({error: "Getting points failed"})    
+  }
+
+}
